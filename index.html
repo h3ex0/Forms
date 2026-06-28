@@ -691,7 +691,7 @@
           <div class="seal" style="width:40px;height:40px;font-size:.88rem;">${esc(initials(p.name))}</div>
           <div class="grow">
             <div class="row-title">${esc(p.name)} ${n>0?'<span class="pill pill-done">'+n+" answer"+(n>1?"s":"")+"</span>":'<span class="pill pill-wait">Pending</span>'}</div>
-            <div class="row-meta">Access code <code>•••••• encrypted</code></div>
+            <div class="row-meta">Access code <code data-code-cell="${p.id}">••••••</code>${p.code?`<button class="btn btn-quiet btn-sm" style="padding:2px 9px;margin-left:6px;" data-show="${p.id}">Show</button>`:` <span class="subtle">— set via “New code”</span>`}</div>
           </div>
           <button class="btn btn-ghost btn-sm" data-reset="${p.id}">${ICON.key} New code</button>
           <button class="btn btn-danger btn-sm" data-del="${p.id}" aria-label="Remove ${esc(p.name)}">${ICON.trash}</button>
@@ -700,7 +700,7 @@
 
     panel.innerHTML = `
       <h2 class="section">Invite a person</h2>
-      <p class="muted" style="margin:0 0 22px;font-size:.95rem;">Give each person a name and a private code. Share it with them directly — once saved it's encrypted and can only be reset, never read back.</p>
+      <p class="muted" style="margin:0 0 22px;font-size:.95rem;">Give each person a name and a private code. You can reveal any code later with “Show”, so you won't forget what you handed out. Only the host can see them.</p>
       <form id="add-form" class="stack" autocomplete="off" novalidate style="margin-bottom:30px;">
         <div class="field" style="margin:0;">
           <label class="flabel" for="np-name">Name <span class="req">*</span></label>
@@ -735,6 +735,13 @@
       try{ await rpc("vault_admin_add_person",{p_admin:session.code,p_name:name,p_code:code}); toast(name+" added.","ok"); await refreshAdmin(); }
       catch(err){ busy(btn,false); toast(friendly(err),"err"); }
     });
+
+    panel.querySelectorAll("[data-show]").forEach(b=>b.addEventListener("click", ()=>{
+      const p = people.find(x=>x.id===b.dataset.show); if(!p) return;
+      const cell = panel.querySelector('[data-code-cell="'+b.dataset.show+'"]');
+      if(b.textContent==="Show"){ cell.textContent = p.code; b.textContent="Hide"; }
+      else { cell.textContent = "••••••"; b.textContent="Show"; }
+    }));
 
     panel.querySelectorAll("[data-reset]").forEach(b=>b.addEventListener("click", async ()=>{
       const p = people.find(x=>x.id===b.dataset.reset); if(!p) return;
