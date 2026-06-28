@@ -334,8 +334,12 @@
   function exportPeopleCSV(){
     const people = (adminData&&adminData.people)||[];
     if(!people.length){ toast("No people to export yet.","err"); return; }
-    const rows = [["Name","Access code","Answers submitted"]];
-    people.forEach(p=>rows.push([ p.name, (p.code!=null?p.code:"(set via New code)"), (p.responses?p.responses.length:0) ]));
+    const rows = [["Name","Access code","Answers submitted","Last submitted"]];
+    people.forEach(p=>{
+      const subs = p.responses||[];
+      const last = subs.length ? subs[subs.length-1].created_at : null;
+      rows.push([ p.name, (p.code!=null?p.code:"(set via New code)"), subs.length, (last?csvDate(last):"") ]);
+    });
     downloadCSV("answer-vault-people-"+stamp()+".csv", rows);
     toast("People exported.","ok");
   }
